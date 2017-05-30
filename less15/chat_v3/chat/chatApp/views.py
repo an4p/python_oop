@@ -1,5 +1,6 @@
 from django import views
 from django.shortcuts import render, redirect
+from django.views import View
 from django.views.generic import FormView
 from chatApp.forms import RegistrationForm, LoginForm
 from chatApp.models import ChatUser
@@ -28,6 +29,9 @@ class LoginController(FormView):
     user_service = UserService()
     template_name = "login.html"
 
+    # def get(self,request):
+    #     return render(request,LoginController.template_name, {"form":LoginForm()})
+
     def post(self,request):
         login_form = LoginForm(request.POST)
         if login_form.is_valid():
@@ -46,5 +50,9 @@ class LoginController(FormView):
         return render(request, "login.html",
                       {"error": login_form.errors, "form": LoginForm()})
 
-
+class ChatController(View):
+    def get(self, request):
+        if request.session.get("login") == None:
+            return redirect("/")
+        return render(request,"chats.html",{"sockjs_url":"http://127.0.0.1:8000/sockjs"})
 

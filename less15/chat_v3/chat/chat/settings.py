@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ''
+SECRET_KEY = '692yjr^yr4$)m_4ud6j7^^!*gd%r+jcp!vn+nr@a4iuzy=m1js'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -80,9 +80,9 @@ DATABASES = {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
     'NAME': 'chatdb',
     'USER': 'postgres',
-    'PASSWORD': '',
+    'PASSWORD': 'Univer123',
     'HOST': '', # Set to empty string for localhost.
-    'PORT': '', # Set to empty string for default.
+    'PORT': '5433', # Set to empty string for default.
   }
 }
 
