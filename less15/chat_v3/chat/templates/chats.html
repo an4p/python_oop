@@ -5,7 +5,7 @@
     <title>Title</title>
     <script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
     <script>
-        var socket = new SockJS({{ sockjs_url }});
+        var socket = new SockJS('{{ sockjs_url }}');
         document.getElementById("sent")[0].addEventListener("click",send);
         document.getElementById("broadcast")[0].addEventListener("click",broadcast);
         document.getElementById("logout")[0].addEventListener("click",logout);
