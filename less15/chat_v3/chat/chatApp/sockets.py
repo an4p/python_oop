@@ -11,7 +11,7 @@ class SocketHandler(sockjs.tornado.SockJSConnection):
     session_active_clients = {} #dictionary with logins and sessions
     sentinel = Sentinel([("127.0.0.1", 17777)],socket_timeout=0.1)
     nosqldatabase = sentinel.master_for("mymaster", socket_timeout=0.1)
-    def on_open(self):
+    def on_open(self, request):
         print("Socket is opened")
 
     def on_message(self, message):
@@ -48,8 +48,8 @@ class SocketHandler(sockjs.tornado.SockJSConnection):
             message = json_message.get("message")
             receiver_socket = SocketHandler.active_clients.get(receiver)
             if receiver_socket == None:
-                resv = ChatUser.objects.filter(login=receiver.first())
-                sendr = ChatUser.objects.filter(login=sender.first())
+                resv = ChatUser.objects.filter(login=receiver).first()
+                sendr = ChatUser.objects.filter(login=sender).first()
                 m = Message(body=message, sender_id=sendr, receiver_id = resv)
                 m.save() #save to postgresql DB
             else:
@@ -60,10 +60,10 @@ class SocketHandler(sockjs.tornado.SockJSConnection):
                 receiver_socket.send(json.dumps(answer))
         if (client !=None and json_message.get("logout")!=None):
             logout_socket=SocketHandler.active_clients[client]
-            SocketHandler.active_clients.delete(client)
+            del SocketHandler.active_clients[client]
             sessionid=SocketHandler.session_active_clients[client]
             Session.objects.filter(session_key=sessionid).delete()
-            SocketHandler.session_active_clients.delete(client)
+            del SocketHandler.session_active_clients[client]
             self.send_list_activeusers()
             answer={}
             answer["auth"] = "yes"
@@ -75,37 +75,40 @@ class SocketHandler(sockjs.tornado.SockJSConnection):
 
 
     def send_list_activeusers(self):
+        #print("list")
         answer={}
         answer["auth"] = "yes"
         answer["list"] = []
         for user in SocketHandler.active_clients.keys():
             answer["list"].append(user)
+        #print(answer["list"])
         for socket in SocketHandler.active_clients.values():
             socket.send(json.dumps(answer))
 
     def send_user_all_messages(self):
         client = self.get_client()
-        messages = Message.objects.filter(receiver_id=client)
+        messages = Message.objects.filter(receiver_id__login=client)
         #from postrgresql
         for message in messages:
             answer = {}
             answer["auth"] = "yes"
-            answer["name"] = message.login
+            chat_user = ChatUser.objects.filter(id=message.sender_id_id).first()
+            answer["name"] = chat_user.login
             answer["message"] = message.body
             self.send(json.dumps(answer))
-            Message.objects.filter(receiver_id=client).delete()
+            Message.objects.filter(receiver_id__login=client).delete()
         for broadcast_message in SocketHandler.nosqldatabase.lrange("broadcast",0,-1):
-            broadcast_message_array = broadcast_message.split(":")
+            broadcast_message_array = str(broadcast_message).split(":")
             answer = {}
             answer["auth"] = "yes"
             answer["name"] = broadcast_message_array[0]
             answer["message"] = broadcast_message_array[1]
             self.send(json.dumps(answer))
 
-        def get_client(self):
-            for key,value in SocketHandler.active_clients.items():
-                if value == self:
-                    return key
+    def get_client(self):
+        for key,value in SocketHandler.active_clients.items():
+            if value == self:
+                return key
 
 
 

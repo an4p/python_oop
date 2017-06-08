@@ -54,5 +54,5 @@ class ChatController(View):
     def get(self, request):
         if request.session.get("login") == None:
             return redirect("/")
-        return render(request,"chats.html",{"sockjs_url":"http://127.0.0.1:8000/sockjs"})
+        return render(request,"chats.html",{"sockjs_url":"http://127.0.0.1:8888/sockjs"})
 
